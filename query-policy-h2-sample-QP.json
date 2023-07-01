@@ -1,0 +1,26 @@
+{
+    "description":"Sample query policy that will run seven queries and email the results as per the template configuration.",
+    "queries":[
+        {
+            "name":"docker-images",
+            "description":"Find all running Docker image based containers",
+            "sql":"SELECT ad.* FROM application_detail ad JOIN ( SELECT foundation, MAX(collection_time) AS latest_time FROM application_detail GROUP BY foundation ) t ON ad.foundation = t.foundation AND ad.collection_time = t.latest_time WHERE ad.running_instances > 0 AND ad.requested_state = 'started' AND ad.image IS NOT NULL"
+        },
+        {
+            "name":"all-apps-pushed-and-still-running-in-the-last-week",
+            "description":"Find all running applications pushed in the last week excluding the system organization",
+            "sql":"SELECT ad.* FROM application_detail ad JOIN ( SELECT foundation, MAX(collection_time) AS latest_time FROM application_detail GROUP BY foundation ) t ON ad.foundation = t.foundation AND ad.collection_time = t.latest_time WHERE ad.running_instances > 0 AND ad.requested_state = 'started' AND WEEK(ad.last_pushed) = WEEK(CURRENT_DATE) - 1 AND YEAR(ad.last_pushed) = YEAR(CURRENT_DATE) AND ad.organization NOT IN ('system')"
+        },
+        {
+            "name":"all-single-instance-apps",
+            "description":"Find all running single instance applications",
+            "sql":"SELECT ad.* FROM application_detail ad JOIN ( SELECT foundation, MAX(collection_time) AS latest_time FROM application_detail GROUP BY foundation ) t ON ad.foundation = t.foundation AND ad.collection_time = t.latest_time WHERE ad.running_instances = 1 AND ad.requested_state = 'started'"
+        }
+    ],
+    "email-notification-template":{
+        "from":"admin@cloudmonk.me",
+        "to":[ "cphillipson@vmware.com" ],
+        "subject":"Query Policy Sample Report",
+        "body":"Results are herewith attached for your consideration."
+    }
+}
