@@ -15,6 +15,11 @@
             "name":"all-single-instance-apps",
             "description":"Find all running single instance applications",
             "sql":"SELECT ad.* FROM application_detail ad JOIN ( SELECT foundation, MAX(collection_time) AS latest_time FROM application_detail GROUP BY foundation ) t ON ad.foundation = t.foundation AND ad.collection_time = t.latest_time WHERE ad.running_instances = 1 AND ad.requested_state = 'started'"
+        },
+        {
+            "name":"average-stats-for-all-apps",
+            "description":"Compute averages per app id for each of the following stats: memory used, disk used, running and total instances",
+            "sql":"SELECT ad.foundation, ad.organization, ad.space, ad.app_id, ad.app_name, AVG(running_instances) as average_running_instances, AVG(total_instances) as average_total_instances, AVG(ad.memory_used) / 1024 / 1024 AS average_memory_used_in_mb, AVG(ad.disk_used) / 1024 / 1024 AS average_disk_used_in_mb FROM application_detail ad JOIN time_keeper tk ON ad.foundation = tk.foundation AND ad.collection_time = tk.collection_time GROUP BY ad.foundation, ad.organization, ad.space, ad.app_id, ad.app_name"
         }
     ],
     "email-notification-template":{
